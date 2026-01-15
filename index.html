@@ -1,0 +1,1339 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reimbursement Dashboard 2026</title>
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#111111">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Reimburse">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <style>
+    :root{
+      --bg:#fbfbfb;
+      --panel:#ffffff;
+      --text:#111;
+      --muted:#666;
+      --faint:#9aa0a6;
+      --line:#e8e8e8;
+      --hover:#f3f4f5;
+      --focus:#e1e3e6;
+      --danger:#b00020;
+      --ok:#1a7f37;
+      --warn:#9a6700;
+      --radius:12px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--font);
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.35;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    .wrap{max-width:1200px;margin:0 auto;padding:22px 18px 40px}
+    .topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}
+    h1{
+      margin:0;
+      font-weight:650;
+      letter-spacing:-0.02em;
+      font-size:28px;
+    }
+    .subtitle{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    button, .btn{
+      border:1px solid var(--line);
+      background:var(--panel);
+      color:var(--text);
+      padding:9px 11px;
+      border-radius:10px;
+      font-size:13px;
+      cursor:pointer;
+      transition:background .12s ease,border-color .12s ease;
+    }
+    button:hover{background:var(--hover)}
+    button:active{transform:translateY(0.5px)}
+    .btn-primary{
+      background:var(--text);
+      color:#fff;
+      border-color:var(--text);
+    }
+    .btn-primary:hover{background:#2b2b2b;border-color:#2b2b2b}
+    .btn-danger{
+      color:var(--danger);
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:var(--panel);
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+    }
+    .summary{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:14px;
+    }
+    .summaryRow{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap:10px;
+    }
+    .metric{
+      padding:10px 10px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+      min-height:72px;
+    }
+    .metric .label{font-size:12px;color:var(--muted);margin-bottom:8px}
+    .metric .value{font-size:20px;font-weight:650;letter-spacing:-0.015em}
+    .metric .sub{margin-top:6px;font-size:12px;color:var(--faint)}
+    .controls{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:12px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .leftControls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .rightControls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    input[type="text"], select, input[type="month"], input[type="date"], input[type="number"]{
+      font-family:var(--font);
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      border-radius:10px;
+      padding:9px 10px;
+      font-size:13px;
+      outline:none;
+      min-width:170px;
+    }
+    input[type="text"]:focus, select:focus, input[type="month"]:focus{
+      border-color:var(--focus);
+      box-shadow: 0 0 0 4px rgba(17,17,17,0.06);
+    }
+    .tableWrap{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      overflow:hidden;
+    }
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      font-size:13px;
+    }
+    thead th{
+      position:sticky;
+      top:0;
+      background:var(--panel);
+      z-index:2;
+      text-align:left;
+      font-weight:600;
+      color:var(--muted);
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      white-space:nowrap;
+    }
+    tbody td{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      vertical-align:middle;
+      background:#fff;
+    }
+    tbody tr:hover td{background:var(--hover)}
+    tbody tr:last-child td{border-bottom:0}
+    .cell-muted{color:var(--muted)}
+    .cell-right{text-align:right;font-variant-numeric:tabular-nums}
+    .status{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      font-size:12px;
+      color:var(--muted);
+      background:#fff;
+    }
+    .dot{
+      width:8px;height:8px;border-radius:50%;
+      background:var(--faint);
+    }
+    .status[data-s="Filed"] .dot{background:var(--faint)}
+    .status[data-s="Submitted"] .dot{background:var(--warn)}
+    .status[data-s="Approved"] .dot{background:#3b82f6}
+    .status[data-s="Reimbursed"] .dot{background:var(--ok)}
+    .rowActions{
+      opacity:0;
+      display:flex;
+      gap:8px;
+      justify-content:flex-end;
+    }
+    tbody tr:hover .rowActions{opacity:1}
+    .iconBtn{
+      border:1px solid var(--line);
+      background:#fff;
+      padding:6px 8px;
+      border-radius:10px;
+      font-size:12px;
+      color:var(--muted);
+      cursor:pointer;
+    }
+    .iconBtn:hover{background:var(--hover);color:var(--text)}
+    .kbd{
+      font-size:11px;
+      color:var(--faint);
+      border:1px solid var(--line);
+      padding:2px 6px;
+      border-radius:8px;
+      background:#fff;
+    }
+    /* Drawer */
+    .drawerBackdrop{
+      position:fixed;inset:0;
+      background:rgba(0,0,0,0.25);
+      display:none;
+      z-index:20;
+    }
+    .drawer{
+      position:fixed;
+      top:0;right:0;
+      height:100%;
+      width:min(520px, 92vw);
+      background:#fff;
+      border-left:1px solid var(--line);
+      transform:translateX(100%);
+      transition:transform .18s ease;
+      z-index:25;
+      display:flex;
+      flex-direction:column;
+    }
+    .drawerHeader{
+      padding:14px 14px 10px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .drawerHeader h2{
+      margin:0;
+      font-size:16px;
+      font-weight:650;
+      letter-spacing:-0.01em;
+    }
+    .drawerHeader .mini{margin-top:6px;color:var(--muted);font-size:12px}
+    .drawerBody{
+      padding:14px;
+      overflow:auto;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .section{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      background:#fff;
+    }
+    .sectionTitle{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:10px;
+      font-weight:600;
+    }
+    .formGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .field label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+    .field input, .field select, .field textarea{
+      width:100%;
+      min-width:0;
+    }
+    textarea{
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:9px 10px;
+      font-size:13px;
+      font-family:var(--font);
+      resize:vertical;
+      min-height:88px;
+      outline:none;
+    }
+    textarea:focus{
+      border-color:var(--focus);
+      box-shadow: 0 0 0 4px rgba(17,17,17,0.06);
+    }
+    .drawerFooter{
+      padding:12px 14px;
+      border-top:1px solid var(--line);
+      display:flex;
+      gap:10px;
+      justify-content:space-between;
+      align-items:center;
+      background:#fff;
+    }
+    .files{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .drop{
+      border:1px dashed var(--line);
+      border-radius:14px;
+      padding:12px;
+      background:#fff;
+      color:var(--muted);
+    }
+    .drop strong{color:var(--text)}
+    .fileList{display:flex;flex-direction:column;gap:10px}
+    .fileItem{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+      background:#fff;
+    }
+    .thumb{
+      width:46px;height:46px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      overflow:hidden;
+      background:#fafafa;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--faint);
+      flex:0 0 auto;
+    }
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .fileMeta{min-width:0;flex:1}
+    .fileName{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .fileSub{margin-top:4px;font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+    .fileBtns{display:flex;gap:8px;flex:0 0 auto}
+    .linkBtn{
+      border:1px solid var(--line);
+      background:#fff;
+      padding:7px 9px;
+      border-radius:10px;
+      font-size:12px;
+      cursor:pointer;
+      color:var(--muted);
+    }
+    .linkBtn:hover{background:var(--hover);color:var(--text)}
+    /* Lightbox */
+    .lightbox{
+      position:fixed;inset:0;
+      background:rgba(0,0,0,0.84);
+      display:none;
+      z-index:40;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+    }
+    .lightboxInner{
+      width:min(980px, 96vw);
+      height:min(86vh, 860px);
+      background:#0d0d0d;
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:16px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .lightboxTop{
+      padding:10px 12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      color:rgba(255,255,255,0.8);
+      font-size:12px;
+      border-bottom:1px solid rgba(255,255,255,0.10);
+      gap:10px;
+    }
+    .lightboxTop .title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .lightboxTop button{
+      border-color:rgba(255,255,255,0.18);
+      background:transparent;
+      color:rgba(255,255,255,0.9);
+    }
+    .lightboxBody{
+      flex:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#000;
+    }
+    .lightboxBody img, .lightboxBody iframe{
+      width:100%;
+      height:100%;
+      border:0;
+      object-fit:contain;
+    }
+    /* Mobile tweaks */
+    @media (max-width: 860px){
+      .summaryRow{grid-template-columns:repeat(2,minmax(0,1fr))}
+      thead th:nth-child(3),
+      tbody td:nth-child(3),
+      thead th:nth-child(4),
+      tbody td:nth-child(4){display:none}
+    }
+    @media (max-width: 540px){
+      .wrap{padding:16px 12px 34px}
+      input[type="text"], select, input[type="month"]{min-width:140px}
+      .formGrid{grid-template-columns:1fr}
+    }
+  
+    /* PWA + Mobile-first enhancements */
+    .fab{
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      z-index:15;
+      border-radius:999px;
+      padding:12px 14px;
+      font-weight:650;
+      letter-spacing:-0.01em;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    }
+    .mobileList{display:none}
+    .card{
+      border-top:1px solid var(--line);
+      padding:12px;
+      background:#fff;
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .card:hover{background:var(--hover)}
+    .card .main{min-width:0; flex:1}
+    .card .title{font-weight:650; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+    .card .meta{margin-top:6px; font-size:12px; color:var(--muted); display:flex; gap:10px; flex-wrap:wrap}
+    .card .amt{font-variant-numeric:tabular-nums; font-weight:650; white-space:nowrap}
+    .card .right{display:flex; flex-direction:column; align-items:flex-end; gap:8px}
+    .card .openBtn{padding:7px 10px}
+    @media (max-width: 700px){
+      .tableWrap table{display:none}
+      .tableWrap{border-radius:var(--radius); overflow:hidden}
+      .mobileList{display:block}
+      .actions #exportBtn, .actions #resetBtn{display:none}
+      .actions #saveHint{display:none}
+      .subtitle{display:none}
+      h1{font-size:22px}
+      .controls{position:sticky; top:0; z-index:5}
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div>
+        <h1 contenteditable="true" id="pageTitle" spellcheck="false">Reimbursement Dashboard</h1>
+        <div class="subtitle">
+          Minimal, audit-ready tracker for 2026 • Attach receipts per item • Offline prototype (LocalStorage)
+        </div>
+      </div>
+      <div class="actions">
+        <span class="pill" id="saveHint">Autosaves <span class="kbd">⌘/Ctrl</span> + <span class="kbd">S</span> optional</span>
+        <button class="btn-primary" id="addBtn">Add reimbursement</button>
+        <button id="exportBtn">Export JSON</button>
+        <button class="btn-danger" id="resetBtn" title="Clears LocalStorage and sample data">Reset</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="summary">
+        <div class="summaryRow">
+          <div class="metric">
+            <div class="label">Total (filtered)</div>
+            <div class="value" id="mTotal">₱0</div>
+            <div class="sub" id="mTotalSub">—</div>
+          </div>
+          <div class="metric">
+            <div class="label">Submitted, not reimbursed</div>
+            <div class="value" id="mOutstanding">₱0</div>
+            <div class="sub" id="mOutstandingSub">—</div>
+          </div>
+          <div class="metric">
+            <div class="label">Approved, not reimbursed</div>
+            <div class="value" id="mApproved">₱0</div>
+            <div class="sub" id="mApprovedSub">—</div>
+          </div>
+          <div class="metric">
+            <div class="label">Pending items</div>
+            <div class="value" id="mPending">0</div>
+            <div class="sub" id="mPendingSub">Filed + Submitted</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="leftControls">
+          <input id="search" type="text" placeholder="Search description, project, doc no…" />
+          <select id="statusFilter">
+            <option value="">All statuses</option>
+            <option>Filed</option>
+            <option>Submitted</option>
+            <option>Approved</option>
+            <option>Reimbursed</option>
+          </select>
+          <input id="monthFilter" type="month" />
+        </div>
+        <div class="rightControls">
+          <span class="pill" id="countPill">0 items</span>
+        </div>
+      </div>
+
+      <div class="tableWrap">
+        <div class="mobileList" id="mobileList"></div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width:130px">Date</th>
+              <th>Description</th>
+              <th style="width:160px">Project</th>
+              <th style="width:160px">Doc No.</th>
+              <th style="width:120px">Status</th>
+              <th style="width:130px" class="cell-right">Amount</th>
+              <th style="width:120px"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="drawerBackdrop" id="backdrop"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawerHeader">
+      <div style="min-width:0">
+        <h2 id="drawerTitle">Reimbursement</h2>
+        <div class="mini" id="drawerSub">—</div>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center; flex:0 0 auto;">
+        <button id="closeDrawer">Close</button>
+      </div>
+    </div>
+
+    <div class="drawerBody">
+      <div class="section">
+        <div class="sectionTitle">Details</div>
+        <div class="formGrid">
+          <div class="field">
+            <label>Date</label>
+            <input type="date" id="fDate" />
+          </div>
+          <div class="field">
+            <label>Reimbursement month</label>
+            <input type="month" id="fMonth" />
+          </div>
+          <div class="field">
+            <label>Expense type</label>
+            <select id="fType">
+              <option value="">—</option>
+              <option>Meals</option>
+              <option>Transportation</option>
+              <option>Supplies</option>
+              <option>Accommodation</option>
+              <option>Representation</option>
+              <option>Communication</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Payment method</label>
+            <select id="fPay">
+              <option value="">—</option>
+              <option>Cash</option>
+              <option>Card</option>
+              <option>Personal</option>
+              <option>Company</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Supporting document date</label>
+            <input type="date" id="fDocDate" />
+          </div>
+          <div class="field">
+            <label>Supporting document no.</label>
+            <input type="text" id="fDocNo" placeholder="OR / SI number" />
+          </div>
+          <div class="field">
+            <label>Budget account</label>
+            <input type="text" id="fBudget" placeholder="e.g., Meals - Staff" />
+          </div>
+          <div class="field">
+            <label>Department / project</label>
+            <input type="text" id="fProject" placeholder="e.g., CLI — Project X" />
+          </div>
+          <div class="field">
+            <label>Index</label>
+            <input type="text" id="fIndex" placeholder="Optional" />
+          </div>
+          <div class="field">
+            <label>Amount (PHP)</label>
+            <input type="number" step="0.01" id="fAmount" placeholder="0.00" />
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="fStatus">
+              <option>Filed</option>
+              <option>Submitted</option>
+              <option>Approved</option>
+              <option>Reimbursed</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tags</label>
+            <input type="text" id="fTags" placeholder="e.g., site visit, client" />
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:10px">
+          <label>Description</label>
+          <textarea id="fDesc" placeholder="Write a short, audit-friendly description…"></textarea>
+        </div>
+
+        <div class="field" style="margin-top:10px">
+          <label>Remarks / notes</label>
+          <textarea id="fNotes" placeholder="Follow-ups, clarifications, etc."></textarea>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sectionTitle">Receipts & attachments</div>
+        <div class="files">
+          <div class="drop" id="dropZone">
+            <div><strong>Drop receipt photos / PDFs here</strong> (or click to upload)</div>
+            <div style="margin-top:6px;font-size:12px;color:var(--faint)">Stored locally in your browser for this prototype.</div>
+            <input id="fileInput" type="file" accept="image/*,application/pdf" multiple style="display:none" />
+          </div>
+          <div class="fileList" id="fileList"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sectionTitle">Status timeline</div>
+        <div class="field">
+          <label>Filed at</label>
+          <input type="date" id="tFiled" />
+        </div>
+        <div class="formGrid" style="margin-top:10px">
+          <div class="field">
+            <label>Submitted at</label>
+            <input type="date" id="tSubmitted" />
+          </div>
+          <div class="field">
+            <label>Approved at</label>
+            <input type="date" id="tApproved" />
+          </div>
+          <div class="field">
+            <label>Reimbursed at</label>
+            <input type="date" id="tReimbursed" />
+          </div>
+          <div class="field">
+            <label>Timeline notes</label>
+            <input type="text" id="tNotes" placeholder="Optional" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="drawerFooter">
+      <div style="display:flex; gap:10px; align-items:center; color:var(--muted); font-size:12px; min-width:0">
+        <span class="pill" id="drawerIdPill">ID —</span>
+        <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis" id="drawerFooterHint">Edits autosave.</span>
+      </div>
+      <div style="display:flex; gap:10px">
+        <button class="btn-danger" id="deleteBtn">Delete</button>
+        <button class="btn-primary" id="doneBtn">Done</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="lightbox" id="lightbox">
+    <div class="lightboxInner">
+      <div class="lightboxTop">
+        <div class="title" id="lbTitle">Preview</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button id="lbClose">Close</button>
+        </div>
+      </div>
+      <div class="lightboxBody" id="lbBody"></div>
+    </div>
+  </div>
+
+  <script>
+    // --- Minimal, Notion-like reimbursement tracker (offline prototype) ---
+    const LS_KEY = "reimbursements_2026_v1";
+    const TITLE_KEY = "reimbursements_2026_title_v1";
+
+    const el = (id) => document.getElementById(id);
+    const fmtPHP = (n) => {
+      const x = Number(n || 0);
+      return x.toLocaleString("en-PH",{style:"currency",currency:"PHP",maximumFractionDigits:2});
+    };
+    const todayISO = () => new Date().toISOString().slice(0,10);
+    const monthISO = (dISO) => (dISO ? dISO.slice(0,7) : "");
+
+    const defaultData = () => ([
+      {
+        id: crypto.randomUUID(),
+        date: todayISO(),
+        month: monthISO(todayISO()),
+        type: "Transportation",
+        pay: "Personal",
+        docDate: todayISO(),
+        docNo: "OR-000123",
+        budget: "Transportation",
+        project: "CLI — Site Visit",
+        index: "",
+        amount: 350.00,
+        status: "Filed",
+        tags: "site visit",
+        desc: "Taxi from office to site visit.",
+        notes: "",
+        files: [],
+        timeline: { filed: todayISO(), submitted:"", approved:"", reimbursed:"", notes:"" }
+      },
+      {
+        id: crypto.randomUUID(),
+        date: todayISO(),
+        month: monthISO(todayISO()),
+        type: "Meals",
+        pay: "Cash",
+        docDate: todayISO(),
+        docNo: "SI-00881",
+        budget: "Meals",
+        project: "CLI — Team Meeting",
+        index: "",
+        amount: 680.00,
+        status: "Submitted",
+        tags: "meeting",
+        desc: "Team meal during coordination meeting.",
+        notes: "Submitted with liquidation set.",
+        files: [],
+        timeline: { filed: todayISO(), submitted: todayISO(), approved:"", reimbursed:"", notes:"" }
+      }
+    ]);
+
+    function loadTitle(){
+      const t = localStorage.getItem(TITLE_KEY);
+      if (t) el("pageTitle").textContent = t;
+    }
+    function saveTitle(){
+      localStorage.setItem(TITLE_KEY, el("pageTitle").textContent.trim() || "Reimbursement Dashboard");
+    }
+
+    function loadData(){
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw){
+        const seed = defaultData();
+        localStorage.setItem(LS_KEY, JSON.stringify(seed));
+        return seed;
+      }
+      try{
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : defaultData();
+      }catch(e){
+        return defaultData();
+      }
+    }
+    function saveData(data){
+      localStorage.setItem(LS_KEY, JSON.stringify(data));
+    }
+
+    let data = loadData();
+    let filtered = [];
+    let activeId = null;
+
+    // Filters
+    const searchEl = el("search");
+    const statusFilterEl = el("statusFilter");
+    const monthFilterEl = el("monthFilter");
+
+    function matches(item){
+      const q = (searchEl.value || "").trim().toLowerCase();
+      const sf = statusFilterEl.value || "";
+      const mf = monthFilterEl.value || "";
+
+      if (sf && item.status !== sf) return false;
+      if (mf && (item.month || "") !== mf) return false;
+
+      if (!q) return true;
+      const hay = [
+        item.desc, item.project, item.docNo, item.budget, item.tags, item.type, item.pay, item.notes
+      ].filter(Boolean).join(" ").toLowerCase();
+      return hay.includes(q);
+    }
+
+    function computeMetrics(items){
+      let total = 0, outstanding = 0, approvedNotPaid = 0, pendingCount = 0;
+      for (const it of items){
+        const amt = Number(it.amount || 0);
+        total += amt;
+        if (it.status === "Submitted") outstanding += amt;
+        if (it.status === "Approved") approvedNotPaid += amt;
+        if (it.status === "Filed" || it.status === "Submitted") pendingCount += 1;
+      }
+      el("mTotal").textContent = fmtPHP(total);
+      el("mOutstanding").textContent = fmtPHP(outstanding);
+      el("mApproved").textContent = fmtPHP(approvedNotPaid);
+      el("mPending").textContent = pendingCount.toString();
+
+      const mf = monthFilterEl.value || "";
+      el("mTotalSub").textContent = mf ? `Month: ${mf}` : `All months`;
+      el("mOutstandingSub").textContent = "Status: Submitted";
+      el("mApprovedSub").textContent = "Status: Approved";
+      el("countPill").textContent = `${items.length} item${items.length===1?"":"s"}`;
+    }
+
+    function renderTable(){
+      filtered = data.filter(matches).sort((a,b)=> (b.date||"").localeCompare(a.date||""));
+      computeMetrics(filtered);
+
+      const tbody = el("tbody");
+      tbody.innerHTML = "";
+      for (const it of filtered){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="cell-muted">${it.date || "—"}</td>
+          <td>
+            <div style="display:flex; gap:10px; align-items:center; min-width:0;">
+              <div style="min-width:0; flex:1;">
+                <div style="font-weight:650; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  ${escapeHtml(it.desc || "Untitled reimbursement")}
+                </div>
+                <div style="margin-top:4px; font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  ${escapeHtml(it.type || "—")} · ${escapeHtml(it.project || "—")}
+                  ${it.files?.length ? ` · ${it.files.length} file${it.files.length===1?"":"s"}` : ""}
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="cell-muted">${escapeHtml(it.project || "—")}</td>
+          <td class="cell-muted">${escapeHtml(it.docNo || "—")}</td>
+          <td>
+            <span class="status" data-s="${escapeHtml(it.status || "Filed")}">
+              <span class="dot"></span>
+              <span>${escapeHtml(it.status || "Filed")}</span>
+            </span>
+          </td>
+          <td class="cell-right">${fmtPHP(it.amount || 0)}</td>
+          <td>
+            <div class="rowActions">
+              <button class="iconBtn" data-open="${it.id}">Open</button>
+              <button class="iconBtn" data-dup="${it.id}">Duplicate</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      renderMobileList(filtered);
+
+      // bind row buttons
+      tbody.querySelectorAll("[data-open]").forEach(btn=>{
+        btn.addEventListener("click", ()=> openDrawer(btn.getAttribute("data-open")));
+      });
+      tbody.querySelectorAll("[data-dup]").forEach(btn=>{
+        btn.addEventListener("click", ()=> duplicateItem(btn.getAttribute("data-dup")));
+      });
+    }
+
+    
+    function renderMobileList(items){
+      const wrap = el("mobileList");
+      if (!wrap) return;
+      wrap.innerHTML = "";
+      if (!items.length){
+        const empty = document.createElement("div");
+        empty.style.padding = "14px";
+        empty.style.color = "var(--muted)";
+        empty.style.fontSize = "13px";
+        empty.textContent = "No reimbursements match your filters.";
+        wrap.appendChild(empty);
+        return;
+      }
+      for (const it of items){
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="main">
+            <div class="title">${escapeHtml(it.desc || "Untitled reimbursement")}</div>
+            <div class="meta">
+              <span>${escapeHtml(it.date || "—")}</span>
+              <span>${escapeHtml(it.type || "—")}</span>
+              <span>${escapeHtml(it.project || "—")}</span>
+              ${it.files?.length ? `<span>${it.files.length} file${it.files.length===1?"":"s"}</span>` : ""}
+            </div>
+          </div>
+          <div class="right">
+            <div class="amt">${fmtPHP(it.amount || 0)}</div>
+            <span class="status" data-s="${escapeHtml(it.status || "Filed")}">
+              <span class="dot"></span>
+              <span>${escapeHtml(it.status || "Filed")}</span>
+            </span>
+            <button class="iconBtn openBtn" data-open="${it.id}">Open</button>
+          </div>
+        `;
+        wrap.appendChild(card);
+      }
+      wrap.querySelectorAll("[data-open]").forEach(btn=>{
+        btn.addEventListener("click", ()=> openDrawer(btn.getAttribute("data-open")));
+      });
+    }
+
+
+    function escapeHtml(str){
+      return String(str ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    // Drawer logic
+    const drawer = el("drawer");
+    const backdrop = el("backdrop");
+
+    function setDrawer(open){
+      backdrop.style.display = open ? "block" : "none";
+      drawer.style.transform = open ? "translateX(0)" : "translateX(100%)";
+      drawer.setAttribute("aria-hidden", open ? "false" : "true");
+    }
+
+    function getActive(){
+      return data.find(x => x.id === activeId) || null;
+    }
+
+    function openDrawer(id){
+      activeId = id;
+      const it = getActive();
+      if (!it) return;
+
+      el("drawerTitle").textContent = (it.desc || "Reimbursement").slice(0,60);
+      el("drawerSub").textContent = `${it.status || "Filed"} · ${fmtPHP(it.amount || 0)} · ${it.month || "—"}`;
+      el("drawerIdPill").textContent = `ID ${it.id.slice(0,8)}`;
+
+      // fill fields
+      el("fDate").value = it.date || "";
+      el("fMonth").value = it.month || monthISO(it.date || "");
+      el("fType").value = it.type || "";
+      el("fPay").value = it.pay || "";
+      el("fDocDate").value = it.docDate || "";
+      el("fDocNo").value = it.docNo || "";
+      el("fBudget").value = it.budget || "";
+      el("fProject").value = it.project || "";
+      el("fIndex").value = it.index || "";
+      el("fAmount").value = (it.amount ?? "");
+      el("fStatus").value = it.status || "Filed";
+      el("fTags").value = it.tags || "";
+      el("fDesc").value = it.desc || "";
+      el("fNotes").value = it.notes || "";
+
+      el("tFiled").value = it.timeline?.filed || "";
+      el("tSubmitted").value = it.timeline?.submitted || "";
+      el("tApproved").value = it.timeline?.approved || "";
+      el("tReimbursed").value = it.timeline?.reimbursed || "";
+      el("tNotes").value = it.timeline?.notes || "";
+
+      renderFiles(it);
+
+      setDrawer(true);
+    }
+
+    function closeDrawer(){
+      activeId = null;
+      setDrawer(false);
+    }
+
+    function updateActive(patch){
+      const idx = data.findIndex(x => x.id === activeId);
+      if (idx < 0) return;
+      data[idx] = { ...data[idx], ...patch };
+      saveData(data);
+      renderTable();
+      // update header hints
+      const it = data[idx];
+      el("drawerTitle").textContent = (it.desc || "Reimbursement").slice(0,60);
+      el("drawerSub").textContent = `${it.status || "Filed"} · ${fmtPHP(it.amount || 0)} · ${it.month || "—"}`;
+    }
+
+    function bindField(id, getPatch){
+      el(id).addEventListener("input", () => updateActive(getPatch()));
+      el(id).addEventListener("change", () => updateActive(getPatch()));
+    }
+
+    // Bind fields
+    bindField("fDate", () => {
+      const d = el("fDate").value || "";
+      const m = el("fMonth").value || monthISO(d);
+      // if user picks a date, default filed timeline if empty
+      const it = getActive();
+      const tl = structuredClone(it.timeline || {});
+      if (!tl.filed) tl.filed = d;
+      return { date:d, month:m, timeline: tl };
+    });
+    bindField("fMonth", () => ({ month: el("fMonth").value || "" }));
+    bindField("fType",  () => ({ type: el("fType").value || "" }));
+    bindField("fPay",   () => ({ pay: el("fPay").value || "" }));
+    bindField("fDocDate", () => ({ docDate: el("fDocDate").value || "" }));
+    bindField("fDocNo", () => ({ docNo: el("fDocNo").value || "" }));
+    bindField("fBudget", () => ({ budget: el("fBudget").value || "" }));
+    bindField("fProject", () => ({ project: el("fProject").value || "" }));
+    bindField("fIndex", () => ({ index: el("fIndex").value || "" }));
+    bindField("fAmount", () => ({ amount: Number(el("fAmount").value || 0) }));
+    bindField("fStatus", () => {
+      const s = el("fStatus").value || "Filed";
+      const it = getActive();
+      const tl = structuredClone(it.timeline || {});
+      // auto stamp timeline (only if empty)
+      const d = el("fDate").value || todayISO();
+      if (s === "Filed" && !tl.filed) tl.filed = d;
+      if (s === "Submitted" && !tl.submitted) tl.submitted = d;
+      if (s === "Approved" && !tl.approved) tl.approved = d;
+      if (s === "Reimbursed" && !tl.reimbursed) tl.reimbursed = d;
+      return { status:s, timeline: tl };
+    });
+    bindField("fTags", () => ({ tags: el("fTags").value || "" }));
+    bindField("fDesc", () => ({ desc: el("fDesc").value || "" }));
+    bindField("fNotes", () => ({ notes: el("fNotes").value || "" }));
+
+    bindField("tFiled", () => ({ timeline: { ...(getActive().timeline||{}), filed: el("tFiled").value || "" }}));
+    bindField("tSubmitted", () => ({ timeline: { ...(getActive().timeline||{}), submitted: el("tSubmitted").value || "" }}));
+    bindField("tApproved", () => ({ timeline: { ...(getActive().timeline||{}), approved: el("tApproved").value || "" }}));
+    bindField("tReimbursed", () => ({ timeline: { ...(getActive().timeline||{}), reimbursed: el("tReimbursed").value || "" }}));
+    bindField("tNotes", () => ({ timeline: { ...(getActive().timeline||{}), notes: el("tNotes").value || "" }}));
+
+    // File handling (stored as DataURLs for images, and as base64 for PDFs)
+    const dropZone = el("dropZone");
+    const fileInput = el("fileInput");
+    dropZone.addEventListener("click", ()=> fileInput.click());
+
+    dropZone.addEventListener("dragover", (e)=>{ e.preventDefault(); dropZone.style.background = "var(--hover)"; });
+    dropZone.addEventListener("dragleave", ()=>{ dropZone.style.background = "#fff"; });
+    dropZone.addEventListener("drop", (e)=>{
+      e.preventDefault();
+      dropZone.style.background = "#fff";
+      const files = Array.from(e.dataTransfer.files || []);
+      handleFiles(files);
+    });
+    fileInput.addEventListener("change", ()=>{
+      const files = Array.from(fileInput.files || []);
+      handleFiles(files);
+      fileInput.value = "";
+    });
+
+    async function handleFiles(files){
+      if (!activeId) return;
+      const it = getActive();
+      if (!it) return;
+
+      const clean = files.filter(f => /^(image\/|application\/pdf$)/.test(f.type));
+      if (!clean.length) return;
+
+      const additions = [];
+      for (const f of clean){
+        const meta = {
+          id: crypto.randomUUID(),
+          name: f.name,
+          type: f.type,
+          size: f.size,
+          addedAt: new Date().toISOString(),
+          dataUrl: await readAsDataURL(f)
+        };
+        additions.push(meta);
+      }
+
+      const nextFiles = [...(it.files||[]), ...additions];
+      updateActive({ files: nextFiles });
+      renderFiles(getActive());
+    }
+
+    function readAsDataURL(file){
+      return new Promise((resolve,reject)=>{
+        const r = new FileReader();
+        r.onload = ()=> resolve(r.result);
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+    }
+
+    function renderFiles(item){
+      const list = el("fileList");
+      list.innerHTML = "";
+      const files = item.files || [];
+      if (!files.length){
+        const empty = document.createElement("div");
+        empty.style.color = "var(--muted)";
+        empty.style.fontSize = "12px";
+        empty.textContent = "No receipts attached yet.";
+        list.appendChild(empty);
+        return;
+      }
+      for (const f of files){
+        const row = document.createElement("div");
+        row.className = "fileItem";
+
+        const thumb = document.createElement("div");
+        thumb.className = "thumb";
+        if ((f.type||"").startsWith("image/")){
+          const img = document.createElement("img");
+          img.src = f.dataUrl;
+          thumb.appendChild(img);
+        }else{
+          thumb.textContent = "PDF";
+        }
+
+        const meta = document.createElement("div");
+        meta.className = "fileMeta";
+        const name = document.createElement("div");
+        name.className = "fileName";
+        name.textContent = f.name || "File";
+        const sub = document.createElement("div");
+        sub.className = "fileSub";
+        const sizeKB = Math.round((Number(f.size||0)/1024)*10)/10;
+        const date = (f.addedAt||"").slice(0,10);
+        sub.textContent = `${(f.type||"").includes("pdf")?"PDF":"Image"} · ${sizeKB} KB · ${date}`;
+        meta.appendChild(name);
+        meta.appendChild(sub);
+
+        const btns = document.createElement("div");
+        btns.className = "fileBtns";
+
+        const preview = document.createElement("button");
+        preview.className = "linkBtn";
+        preview.textContent = "Preview";
+        preview.addEventListener("click", ()=> openLightbox(f));
+
+        const remove = document.createElement("button");
+        remove.className = "linkBtn";
+        remove.textContent = "Remove";
+        remove.addEventListener("click", ()=> removeFile(f.id));
+
+        btns.appendChild(preview);
+        btns.appendChild(remove);
+
+        row.appendChild(thumb);
+        row.appendChild(meta);
+        row.appendChild(btns);
+        list.appendChild(row);
+      }
+    }
+
+    function removeFile(fileId){
+      const it = getActive();
+      if (!it) return;
+      const next = (it.files||[]).filter(x => x.id !== fileId);
+      updateActive({ files: next });
+      renderFiles(getActive());
+    }
+
+    // Lightbox
+    const lightbox = el("lightbox");
+    const lbBody = el("lbBody");
+    const lbTitle = el("lbTitle");
+
+    function openLightbox(file){
+      lbTitle.textContent = file.name || "Preview";
+      lbBody.innerHTML = "";
+      if ((file.type||"").startsWith("image/")){
+        const img = document.createElement("img");
+        img.src = file.dataUrl;
+        lbBody.appendChild(img);
+      }else{
+        const iframe = document.createElement("iframe");
+        iframe.src = file.dataUrl;
+        lbBody.appendChild(iframe);
+      }
+      lightbox.style.display = "flex";
+    }
+    function closeLightbox(){
+      lightbox.style.display = "none";
+      lbBody.innerHTML = "";
+    }
+    el("lbClose").addEventListener("click", closeLightbox);
+    lightbox.addEventListener("click", (e)=>{ if (e.target === lightbox) closeLightbox(); });
+
+    // CRUD
+    function addItem(){
+      const d = todayISO();
+      const item = {
+        id: crypto.randomUUID(),
+        date: d,
+        month: monthISO(d),
+        type: "",
+        pay: "",
+        docDate: "",
+        docNo: "",
+        budget: "",
+        project: "",
+        index: "",
+        amount: 0,
+        status: "Filed",
+        tags: "",
+        desc: "New reimbursement",
+        notes: "",
+        files: [],
+        timeline: { filed: d, submitted:"", approved:"", reimbursed:"", notes:"" }
+      };
+      data = [item, ...data];
+      saveData(data);
+      renderTable();
+      openDrawer(item.id);
+      // focus description
+      setTimeout(()=> el("fDesc").focus(), 50);
+    }
+
+    function duplicateItem(id){
+      const src = data.find(x => x.id === id);
+      if (!src) return;
+      const copy = structuredClone(src);
+      copy.id = crypto.randomUUID();
+      copy.desc = (src.desc || "Reimbursement") + " (copy)";
+      copy.timeline = { filed: todayISO(), submitted:"", approved:"", reimbursed:"", notes:"" };
+      data = [copy, ...data];
+      saveData(data);
+      renderTable();
+      openDrawer(copy.id);
+    }
+
+    function deleteActive(){
+      if (!activeId) return;
+      const it = getActive();
+      if (!it) return;
+      const ok = confirm("Delete this reimbursement? This cannot be undone.");
+      if (!ok) return;
+      data = data.filter(x => x.id !== activeId);
+      saveData(data);
+      closeDrawer();
+      renderTable();
+    }
+
+    // Buttons
+    el("addBtn").addEventListener("click", addItem);
+
+    const fab = document.getElementById("fabAdd");
+    function updateFab(){
+      if (!fab) return;
+      const isMobile = window.matchMedia("(max-width: 700px)").matches;
+      fab.style.display = isMobile ? "inline-flex" : "none";
+    }
+    window.addEventListener("resize", updateFab);
+    updateFab();
+    if (fab) fab.addEventListener("click", addItem);
+
+    el("closeDrawer").addEventListener("click", closeDrawer);
+    el("doneBtn").addEventListener("click", closeDrawer);
+    backdrop.addEventListener("click", closeDrawer);
+    el("deleteBtn").addEventListener("click", deleteActive);
+
+    el("exportBtn").addEventListener("click", ()=>{
+      const payload = {
+        title: el("pageTitle").textContent.trim(),
+        exportedAt: new Date().toISOString(),
+        items: data
+      };
+      const blob = new Blob([JSON.stringify(payload,null,2)], {type:"application/json"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "reimbursements_2026_export.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    el("resetBtn").addEventListener("click", ()=>{
+      const ok = confirm("Reset prototype? This clears all saved reimbursements and files in this browser.");
+      if (!ok) return;
+      localStorage.removeItem(LS_KEY);
+      data = loadData();
+      renderTable();
+      closeDrawer();
+    });
+
+    // Filters re-render
+    [searchEl, statusFilterEl, monthFilterEl].forEach(x => x.addEventListener("input", renderTable));
+    [statusFilterEl, monthFilterEl].forEach(x => x.addEventListener("change", renderTable));
+
+    // Page title persistence
+    loadTitle();
+    el("pageTitle").addEventListener("input", saveTitle);
+
+    // Keyboard: Esc closes drawer/lightbox
+    window.addEventListener("keydown", (e)=>{
+      if (e.key === "Escape"){
+        if (lightbox.style.display === "flex") closeLightbox();
+        else if (drawer.getAttribute("aria-hidden") === "false") closeDrawer();
+      }
+      // Ctrl/Cmd+S to force-save
+      const isMac = navigator.platform.toUpperCase().includes("MAC");
+      const mod = isMac ? e.metaKey : e.ctrlKey;
+      if (mod && e.key.toLowerCase() === "s"){
+        e.preventDefault();
+        saveTitle();
+        saveData(data);
+        el("saveHint").textContent = "Saved.";
+        setTimeout(()=> el("saveHint").innerHTML = 'Autosaves <span class="kbd">⌘/Ctrl</span> + <span class="kbd">S</span> optional', 900);
+      }
+    });
+
+    
+    // PWA: register Service Worker (requires being served over https or localhost)
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
+
+
+    // Init
+    renderTable();
+  </script>
+
+  <button class="btn-primary fab" id="fabAdd">＋ Add</button>
+</body>
+</html>

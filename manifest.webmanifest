@@ -1,0 +1,21 @@
+{
+  "name": "Reimbursement Dashboard 2026",
+  "short_name": "Reimburse",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fbfbfb",
+  "theme_color": "#111111",
+  "description": "Minimal, audit-ready reimbursement tracker with receipt attachments (offline prototype).",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
